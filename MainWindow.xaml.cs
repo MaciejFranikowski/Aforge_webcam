@@ -32,7 +32,7 @@ namespace AForge_webcam
         #region Public properties
 
         public ObservableCollection<FilterInfo> VideoDevices { get; set; }
-        public ObservableCollection<VideoCapabilities> VideoCapabilites { get; set; }
+        public ObservableCollection<System.Drawing.Size> VideoResolutions { get; set; }
 
         public FilterInfo CurrentDevice
         {
@@ -41,11 +41,17 @@ namespace AForge_webcam
         }
         private FilterInfo _currentDevice;
 
+        public System.Drawing.Size CurrentResolution {
+            get { return _currentResolution; }
+            set { _currentResolution = value; this.OnPropertyChanged("CurrentResolution"); }
+        }
+        private System.Drawing.Size _currentResolution;
+
         #endregion
 
         #region Private fields
 
-        private IVideoSource _videoSource;
+        private VideoCaptureDevice _videoSource;
         private VideoFileWriter _writer;
         private bool _recording;
         private DateTime? _firstFrameTime = null;
@@ -57,6 +63,7 @@ namespace AForge_webcam
             InitializeComponent();
             this.DataContext = this;
             GetVideoDevices();
+            getVideoResoltion();
             this.Closing += MainWindow_Closing;
         }
 
@@ -205,17 +212,29 @@ namespace AForge_webcam
             if (CurrentDevice != null)
             {
                 _videoSource = new VideoCaptureDevice(CurrentDevice.MonikerString);
-                
-               // getVideoResoltion(_videoSource);
                 _videoSource.NewFrame += video_NewFrame;
                 _videoSource.Start();
             }
         }
-/*
-        private void getVideoResoltion(VideoCaptureDevice videoSource)
+
+        private void getVideoResoltion()
         {
-            VideoCapabilites = videoSource.VideoCapabilites;
-        }*/
+            _videoSource = new VideoCaptureDevice(CurrentDevice.MonikerString);
+            VideoResolutions = new ObservableCollection<System.Drawing.Size>() ;
+            for (int i = 0; i < _videoSource.VideoCapabilities.Length; i++)
+            {
+                VideoResolutions.Add(_videoSource.VideoCapabilities[i].FrameSize);
+            }
+            if (VideoResolutions.Any())
+            {
+                _currentResolution = VideoResolutions[0];
+            }
+            else
+            {
+                MessageBox.Show("No video sources were found", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+        }
 
         #region INotifyPropertyChanged members
 
