@@ -63,7 +63,7 @@ namespace AForge_webcam
             InitializeComponent();
             this.DataContext = this;
             GetVideoDevices();
-            getVideoResoltion();
+            getVideoResolution();
             this.Closing += MainWindow_Closing;
         }
 
@@ -212,12 +212,13 @@ namespace AForge_webcam
             if (CurrentDevice != null)
             {
                 _videoSource = new VideoCaptureDevice(CurrentDevice.MonikerString);
+                setVideoResolution();
                 _videoSource.NewFrame += video_NewFrame;
                 _videoSource.Start();
             }
         }
 
-        private void getVideoResoltion()
+        private void getVideoResolution()
         {
             _videoSource = new VideoCaptureDevice(CurrentDevice.MonikerString);
             VideoResolutions = new ObservableCollection<System.Drawing.Size>() ;
@@ -234,6 +235,17 @@ namespace AForge_webcam
                 MessageBox.Show("No video sources were found", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
+        }
+
+        private void setVideoResolution()
+        {
+            for (int i = 0; i < _videoSource.VideoCapabilities.Length; i++)
+            {
+                if (_currentResolution.Equals(_videoSource.VideoCapabilities[i].FrameSize)){
+                    _videoSource.VideoResolution = _videoSource.VideoCapabilities[i];
+                }
+            }
+            
         }
 
         #region INotifyPropertyChanged members

@@ -18,13 +18,12 @@
                   DisplayMemberPath="Name"
                   ItemsSource="{Binding VideoDevices}"
                   SelectedItem="{Binding CurrentDevice}" />
-        <ComboBox x:Name="comboBoxRes"
-                  Width="136"
+        <ComboBox x:Name="comboBoxRes" 
+                 Width="136"
                   Height="21"
-                  Margin="189,0,0,25"
+                  Margin="183,0,0,25"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Bottom"
-                  DisplayMemberPath="Height"
                   ItemsSource="{Binding VideoResolutions}"
                   SelectedItem="{Binding CurrentResolution}" />
         <Label Width="167"
