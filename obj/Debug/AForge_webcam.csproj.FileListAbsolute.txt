@@ -73,3 +73,9 @@ C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\avutil-51.dll
 C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\postproc-52.dll
 C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\swresample-0.dll
 C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\swscale-2.dll
+C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\AForge.Imaging.dll
+C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\AForge.Math.dll
+C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\AForge.Vision.dll
+C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\AForge.Imaging.xml
+C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\AForge.Math.xml
+C:\Users\mfran\Documents\github\AForge_webcam\bin\Debug\AForge.Vision.xml

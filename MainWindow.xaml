@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AForge_webcam"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-  
+        Title="MainWindow" Height="500" Width="800">
+
     <Grid>
-        <Image x:Name="videoPlayer" Margin="10,0,10,70" />
+        <Image x:Name="videoPlayer" Margin="10,0,10,68" />
         <ComboBox x:Name="comboBox"
                   Width="136"
                   Height="21"
-                  Margin="10,0,0,25"
+                  Margin="10,0,0,10"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Bottom"
                   DisplayMemberPath="Name"
@@ -21,54 +21,62 @@
         <ComboBox x:Name="comboBoxRes" 
                  Width="136"
                   Height="21"
-                  Margin="183,0,0,25"
+                  Margin="169,0,0,10"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Bottom"
                   ItemsSource="{Binding VideoResolutions}"
                   SelectedItem="{Binding CurrentResolution}" />
+        <TextBox x:Name="motionTextBox"
+            BorderThickness="0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Margin="0,0,41,39" 
+            Width="136"
+            Height="24"/>
+
         <Label Width="167"
                Height="24"
-               Margin="10,0,0,46"
+               Margin="10,0,0,31"
                HorizontalAlignment="Left"
                VerticalAlignment="Bottom"
                Content="Select video source" />
         <Label Width="167"
                Height="24"
-               Margin="189,0,0,46"
+               Margin="171,0,0,31"
                HorizontalAlignment="Left"
                VerticalAlignment="Bottom"
                Content="Select resolution" />
         <Button Width="67"
                 Height="21"
-                Margin="343,0,0,25"
+                Margin="332,0,0,10"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Click="btnStart_Click"
                 Content="Start Video" />
         <Button Width="67"
                 Height="21"
-                Margin="422,0,0,25"
+                Margin="418,0,0,10"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Click="btnStop_Click"
                 Content="Stop Video" />
         <Button Width="85"
                 Height="21"
-                Margin="501,0,0,25"
+                Margin="497,0,0,10"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Click="btnStartRec_Click"
                 Content="Start Recording" />
         <Button Width="85"
                 Height="21"
-                Margin="598,0,0,25"
+                Margin="596,0,0,10"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Click="btnStopRec_Click"
                 Content="Stop Recording" />
         <Button Width="85"
                 Height="21"
-                Margin="697,0,0,25"
+                Margin="697,0,0,10"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Click="btnSnap_Click"

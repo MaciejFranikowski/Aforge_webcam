@@ -20,6 +20,7 @@ using System.Windows.Shapes;
 using Accord.Video.FFMPEG;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using AForge.Vision.Motion;
 using Microsoft.Win32;
 
 namespace AForge_webcam
@@ -33,7 +34,7 @@ namespace AForge_webcam
 
         public ObservableCollection<FilterInfo> VideoDevices { get; set; }
         public ObservableCollection<System.Drawing.Size> VideoResolutions { get; set; }
-
+       
         public FilterInfo CurrentDevice
         {
             get { return _currentDevice; }
@@ -47,20 +48,24 @@ namespace AForge_webcam
         }
         private System.Drawing.Size _currentResolution;
 
+
         #endregion
 
         #region Private fields
 
+        private MotionDetector detector;
         private VideoCaptureDevice _videoSource;
         private VideoFileWriter _writer;
         private bool _recording;
         private DateTime? _firstFrameTime = null;
         private BitmapImage bi;
+        
         #endregion
 
         public MainWindow()
         {
             InitializeComponent();
+            detector = new MotionDetector(new SimpleBackgroundModelingDetector(), new MotionAreaHighlighting());
             this.DataContext = this;
             GetVideoDevices();
             getVideoResolution();
@@ -80,6 +85,7 @@ namespace AForge_webcam
                 _videoSource.NewFrame -= new NewFrameEventHandler(video_NewFrame);
             }
             videoPlayer.Source = null;
+            Dispatcher.BeginInvoke(new ThreadStart(delegate { motionTextBox.Text = ""; }));
         }
 
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
@@ -99,14 +105,39 @@ namespace AForge_webcam
                 }
                 bi.Freeze(); // avoid cross thread operations and prevents leaks
                 Dispatcher.BeginInvoke(new ThreadStart(delegate{ videoPlayer.Source= bi;}));
-                /*
-                 * if(detector <= 00.2)
-                 */
+
+                motionDetect(eventArgs);
+                
             }
             catch (Exception exc)
             {
                 MessageBox.Show("Error on _videoSource_NewFrame:\n" + exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 StopCamera();
+            }
+        }
+
+        private void motionDetect(NewFrameEventArgs eventArgs)
+        {
+            try
+            {
+                using (var bitmap = (Bitmap)eventArgs.Frame.Clone())
+                {
+                    if (detector.ProcessFrame(bitmap) > 0.02)
+                    {
+                        
+                        Dispatcher.BeginInvoke(new ThreadStart(delegate { motionTextBox.Text = "Motion detected"; }));
+                        
+                    }
+                    else
+                    {
+                        Dispatcher.BeginInvoke(new ThreadStart(delegate { motionTextBox.Text = "Motion not detected"; }));
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                MessageBox.Show("Error on _videoSource_NewFrame:\n" + exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                //StopCamera();
             }
         }
 
