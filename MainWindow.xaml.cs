@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,8 +17,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Accord.Video.FFMPEG;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using Microsoft.Win32;
 
 namespace AForge_webcam
 {
@@ -29,6 +32,7 @@ namespace AForge_webcam
         #region Public properties
 
         public ObservableCollection<FilterInfo> VideoDevices { get; set; }
+        public ObservableCollection<VideoCapabilities> VideoCapabilites { get; set; }
 
         public FilterInfo CurrentDevice
         {
@@ -42,7 +46,10 @@ namespace AForge_webcam
         #region Private fields
 
         private IVideoSource _videoSource;
-
+        private VideoFileWriter _writer;
+        private bool _recording;
+        private DateTime? _firstFrameTime = null;
+        private BitmapImage bi;
         #endregion
 
         public MainWindow()
@@ -70,20 +77,53 @@ namespace AForge_webcam
 
         private void video_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
+            
             try
             {
-                BitmapImage bi;
+                if (_recording)
+                {
+                    recordVideo(eventArgs);
+                }
+
+                
                 using (var bitmap = (Bitmap)eventArgs.Frame.Clone())
                 {
                     bi = bitmap.ToBitmapImage();
                 }
                 bi.Freeze(); // avoid cross thread operations and prevents leaks
-                Dispatcher.BeginInvoke(new ThreadStart(delegate { videoPlayer.Source = bi; }));
+                Dispatcher.BeginInvoke(new ThreadStart(delegate{ videoPlayer.Source= bi;}));
+                /*
+                 * if(detector <= 00.2)
+                 */
             }
             catch (Exception exc)
             {
                 MessageBox.Show("Error on _videoSource_NewFrame:\n" + exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 StopCamera();
+            }
+        }
+
+        private void recordVideo(NewFrameEventArgs eventArgs) 
+        {
+            using (var bitmap = (Bitmap)eventArgs.Frame.Clone())
+            {
+                try
+                {
+                    if (_firstFrameTime != null)
+                    {
+                        _writer.WriteVideoFrame(bitmap, DateTime.Now - _firstFrameTime.Value);
+                    }
+                    else
+                    {
+                        _writer.WriteVideoFrame(bitmap);
+                        _firstFrameTime = DateTime.Now;
+                    }
+                }
+                catch (Exception exc)
+                {
+                    MessageBox.Show("Error on _videoSource_NewFrame:\n" + exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    StopCamera();
+                }
             }
         }
 
@@ -103,6 +143,8 @@ namespace AForge_webcam
             {
                 MessageBox.Show("No video sources were found", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+
         }
 
         private void btnStart_Click(object sender, RoutedEventArgs e)
@@ -117,17 +159,45 @@ namespace AForge_webcam
 
         private void btnStopRec_Click(object sender, RoutedEventArgs e)
         {
-            StopCamera();
+            _recording = false;
+            _writer.Close();
+            _writer.Dispose();
         }
 
         private void btnStartRec_Click(object sender, RoutedEventArgs e)
         {
-            StopCamera();
+            var dialog = new SaveFileDialog();
+            dialog.FileName = "Video1";
+            dialog.DefaultExt = ".avi";
+            dialog.AddExtension = true;
+            var dialogresult = dialog.ShowDialog();
+            if (dialogresult != true)
+            {
+                return;
+            }
+            _firstFrameTime = null;
+            _writer = new VideoFileWriter();
+            _writer.Open(dialog.FileName, (int)Math.Round(bi.Width, 0), (int)Math.Round(bi.Height, 0));
+            
+            _recording = true;
         }
 
         private void btnSnap_Click(object sender, RoutedEventArgs e)
         {
-            StopCamera();
+            var dialog = new SaveFileDialog();
+            dialog.FileName = "Snapshot1";
+            dialog.DefaultExt = ".png";
+            var dialogresult = dialog.ShowDialog();
+            if (dialogresult != true)
+            {
+                return;
+            }
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bi));
+            using (var filestream = new FileStream(dialog.FileName, FileMode.Create))
+            {
+                encoder.Save(filestream);
+            }
         }
 
         private void StartCamera()
@@ -135,10 +205,17 @@ namespace AForge_webcam
             if (CurrentDevice != null)
             {
                 _videoSource = new VideoCaptureDevice(CurrentDevice.MonikerString);
+                
+               // getVideoResoltion(_videoSource);
                 _videoSource.NewFrame += video_NewFrame;
                 _videoSource.Start();
             }
         }
+/*
+        private void getVideoResoltion(VideoCaptureDevice videoSource)
+        {
+            VideoCapabilites = videoSource.VideoCapabilites;
+        }*/
 
         #region INotifyPropertyChanged members
 
